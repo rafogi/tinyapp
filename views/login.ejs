@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <title>login Page</title>
+  <style>
+    article.shop {
+      display: flex;
+      height: 400px;
+      width: 300px;
+    }
+    label {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h2>Login form</h2>
+    <form action="/login" method="POST">
+      <div>
+        <label for="email">Email</label>
+        <input type="email" name="email"  placeholder="Email" />
+      </div>
+
+      <div>
+        <label for="password">Password</label>
+        <input type="password" name="password" placeholder="password" />
+      </div>
+
+      <button type="submit">Login</button>
+    </form>
+  </main>
+</body>
+
+</html>
