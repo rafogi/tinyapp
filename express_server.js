@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
+const { getUserByEmail, generateRandomString, regCheck, loginCheck } = require('./helpers');
 
 const app = express();
 const PORT = 8080;
@@ -32,23 +33,6 @@ const users = {
   }
 };
 
-//functions
-const generateRandomString = function() {
-  let ans = Math.random().toString(36).slice(3,9);
-  
-  return ans;
-};
-
-//check database if any users are already registered with that name
-const regCheck = (email, database) => {
-  for (let id in database) {
-    if (database[id].email === email) {
-      return true;
-    }
-  } return false;
-};
-
-
 //check for specific urls for user in database
 
 const urlsForUsers = (id) => {
@@ -60,16 +44,6 @@ const urlsForUsers = (id) => {
   }
   return newOb;
 };
-
-//check if the user is logged in
-const loginCheck = (id) => {
-  if (id) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
 
 app.set("view engine", "ejs");
 
@@ -103,13 +77,16 @@ app.get("/urls/new", (req, res) => {
 //adding new url
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
-  const longURL = req.body.longURL;
+  let longURL = req.body.longURL;
+  if (longURL.substring(0,4) !== 'http') {
+    longURL = 'http://' + longURL;
+  }
   urlDatabase[shortURL] = {longURL: longURL, userID: req.session.user_id};
-  res.redirect(`/urls`);         // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls`);
 });
 //editing url page
 app.get("/urls/:shortURL", (req, res) => {
-  if (loginCheck(req.session.user_id)) {
+  if (loginCheck(req.session.user_id)) { //check if user is logged in
     let templateVars = {
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
@@ -125,7 +102,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // Delete
 app.post('/urls/:shortURL/delete', (req, res) => {
-  if (loginCheck(req.session.user_id)) {
+  if (loginCheck(req.session.user_id)) { //check if user is logged in
     const del = req.params.shortURL;
     delete urlDatabase[del];
     res.redirect('/urls');
@@ -139,9 +116,12 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 // Edit
 app.post('/urls/:shortURL', (req, res) => {
   if (loginCheck(req.session.user_id)) {
-    const long = req.body['longURL'];
+    longURL = req.body['longURL'];
+    if (longURL.substring(0,4) !== 'http') {
+      longURL = 'http://' + longURL;
+    }
     const shortURL = req.params.shortURL;
-    urlDatabase[shortURL] = {longURL: long, userID: req.session.user_id};
+    urlDatabase[shortURL] = {longURL: longURL, userID: req.session.user_id};
     res.redirect(`/urls`);
     return;
   } else {
@@ -149,7 +129,6 @@ app.post('/urls/:shortURL', (req, res) => {
     res.redirect('login');
   }
 });
-
 
 //logout
 app.post('/logout', (req,res) => {
@@ -181,15 +160,14 @@ app.post('/login', (req,res) => {
   if (!req.body.email || !req.body.password) { //if my boxes are empty
     return res.status(400).send('email or passowrd empty <a href="/login"> try again</a>');
   } else {
-    
-    for (let id in users) {
-      if (users[id].email === email && bcrypt.compareSync(password, users[id].password)) {
-        req.session.user_id = users[id].id;
-        return res.redirect('/urls');
-      }
+    let user = getUserByEmail(req.body.email, users);
+    if (user) {
+      req.session.user_id = users[user].id;
+      return res.redirect('/urls');
+    } else {
+      res.status(403).send('User and Password do not match <a href="/login"> try again</a>');
     }
   }
-  res.status(403).send('User and Password do not match <a href="/login"> try again</a>');
 });
 
 //handle register boxes

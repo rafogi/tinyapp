@@ -1,3 +1,19 @@
+//functions
+const generateRandomString = function() {
+  let ans = Math.random().toString(36).slice(3,9);
+  
+  return ans;
+};
+
+//check database if any users are already registered with that name
+const regCheck = (email, database) => {
+  for (let id in database) {
+    if (database[id].email === email) {
+      return true;
+    }
+  } return false;
+};
+
 //check if user is registered in Database
 const getUserByEmail = function(email, database) {
   let user;
@@ -8,4 +24,25 @@ const getUserByEmail = function(email, database) {
   } return user;
 };
 
-module.exports = getUserByEmail;
+//check for specific urls for user in database
+
+const urlsForUsers = (id) => {
+  let newOb = {};
+  for (let urls in urlDatabase) {
+    if (id === urlDatabase[urls].userID) {
+      newOb[urls] = urlDatabase[urls];
+    }
+  }
+  return newOb;
+};
+
+//check if the user is logged in
+const loginCheck = (id) => {
+  if (id) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+module.exports = { getUserByEmail, generateRandomString, regCheck, loginCheck, urlsForUsers}
