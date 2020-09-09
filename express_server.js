@@ -86,7 +86,6 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let userRL = urlsForUsers(req.session.user_id, urlDatabase);
   if (loginCheck(req.session.user_id) && userRL[req.params.shortURL]) { //check if user is logged in
-      console.log(userRL);
     let templateVars = {
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
