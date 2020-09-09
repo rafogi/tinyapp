@@ -26,11 +26,11 @@ const getUserByEmail = function(email, database) {
 
 //check for specific urls for user in database
 
-const urlsForUsers = (id) => {
+const urlsForUsers = (id, database) => {
   let newOb = {};
-  for (let urls in urlDatabase) {
-    if (id === urlDatabase[urls].userID) {
-      newOb[urls] = urlDatabase[urls];
+  for (let urls in database) {
+    if (id === database[urls].userID) {
+      newOb[urls] = database[urls];
     }
   }
   return newOb;

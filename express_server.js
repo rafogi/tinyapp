@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
-const { getUserByEmail, generateRandomString, regCheck, loginCheck } = require('./helpers');
+const { getUserByEmail, generateRandomString, regCheck, loginCheck, urlsForUsers } = require('./helpers');
 
 const app = express();
 const PORT = 8080;
@@ -35,21 +35,13 @@ const users = {
 
 //check for specific urls for user in database
 
-const urlsForUsers = (id) => {
-  let newOb = {};
-  for (let urls in urlDatabase) {
-    if (id === urlDatabase[urls].userID) {
-      newOb[urls] = urlDatabase[urls];
-    }
-  }
-  return newOb;
-};
+
 
 app.set("view engine", "ejs");
 
 //directs to urls page
 app.get("/urls", (req, res) => {
-  let userRL = urlsForUsers(req.session.user_id);
+  let userRL = urlsForUsers(req.session.user_id, urlDatabase);
   let templateVars = {
     urls: userRL,
     user_id: users[req.session.user_id]
@@ -92,7 +84,9 @@ app.post("/urls", (req, res) => {
 });
 //editing url page
 app.get("/urls/:shortURL", (req, res) => {
-  if (loginCheck(req.session.user_id)) { //check if user is logged in
+  let userRL = urlsForUsers(req.session.user_id, urlDatabase);
+  if (loginCheck(req.session.user_id) && userRL[req.params.shortURL]) { //check if user is logged in
+      console.log(userRL);
     let templateVars = {
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL].longURL,
@@ -108,7 +102,8 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // Delete
 app.post('/urls/:shortURL/delete', (req, res) => {
-  if (loginCheck(req.session.user_id)) { //check if user is logged in
+  let userRL = urlsForUsers(req.session.user_id, urlDatabase);
+  if (loginCheck(req.session.user_id && userRL[req.params.shortURL])) { //check if user is logged in
     const del = req.params.shortURL;
     delete urlDatabase[del];
     res.redirect('/urls');
@@ -121,7 +116,8 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 // Edit
 app.post('/urls/:shortURL', (req, res) => {
-  if (loginCheck(req.session.user_id)) {
+  let userRL = urlsForUsers(req.session.user_id, urlDatabase);
+  if (loginCheck(req.session.user_id && userRL[req.params.shortURL])) {
     longURL = req.body['longURL'];
     if (longURL.substring(0,4) !== 'http') {
       longURL = 'http://' + longURL;
