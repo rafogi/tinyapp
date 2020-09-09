@@ -48,13 +48,7 @@ app.get("/urls", (req, res) => {
   };
   res.render("urls_index", templateVars);
 });
-//the hello world page
-app.get("/hello", (req, res) => {
-  let templateVars = { greeting: 'Hello World!',
-    user_id: users[req.session.user_id]
-  };
-  res.render("hello_world", templateVars);
-});
+
 //new url page
 app.get("/urls/new", (req, res) => {
   if (!req.session.user_id) {
@@ -159,7 +153,7 @@ app.get('/login', (req,res) => {
 app.post('/login', (req,res) => {
   const { email, password } = {email: req.body.email, password: req.body.password};
   if (!req.body.email || !req.body.password) { //if my boxes are empty
-    return res.status(400).send('email or passowrd empty <a href="/login"> try again</a>');
+    return res.status(400).send('email or password empty <a href="/login"> try again</a>');
   } else {
     let user = getUserByEmail(email, users);
     if (user && bcrypt.compareSync(password, users[user].password)) {
@@ -174,7 +168,7 @@ app.post('/login', (req,res) => {
 //handle register boxes
 app.post('/register', (req,res) => {
   if (!req.body.email || !req.body.password) {
-    return res.status(400).send('email or passowrd empty <a href="/login"> try again</a>');
+    return res.status(400).send('email or password empty <a href="/login"> try again</a>');
   } else if (regCheck(req.body.email, users)) { //check if email is already in database
     return res.status(403).send('email already in database try a different email <a href="/register"> try again</a>');
   } else {
@@ -186,7 +180,8 @@ app.post('/register', (req,res) => {
       email: email,
       password: hashword
     };
-    res.redirect('/login');
+    req.session.user_id = users[id].id;
+    res.redirect('/urls');
   }
 });
 
