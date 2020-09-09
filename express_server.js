@@ -74,6 +74,12 @@ app.get("/urls/new", (req, res) => {
     res.render("urls_new", templateVars);
   }
 });
+
+app.get('/', (req,res) => {
+  res.redirect('/urls');
+});
+
+
 //adding new url
 app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
@@ -161,7 +167,7 @@ app.post('/login', (req,res) => {
     return res.status(400).send('email or passowrd empty <a href="/login"> try again</a>');
   } else {
     let user = getUserByEmail(req.body.email, users);
-    if (user) {
+    if (user && bcrypt.compareSync(password, users[user].password)) {
       req.session.user_id = users[user].id;
       return res.redirect('/urls');
     } else {
