@@ -117,7 +117,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/urls/:shortURL', (req, res) => {
   let userRL = urlsForUsers(req.session.user_id, urlDatabase);
   if (loginCheck(req.session.user_id && userRL[req.params.shortURL])) {
-    longURL = req.body['longURL'];
+    let longURL = req.body['longURL'];
     if (longURL.substring(0,4) !== 'http') {
       longURL = 'http://' + longURL;
     }
@@ -161,7 +161,7 @@ app.post('/login', (req,res) => {
   if (!req.body.email || !req.body.password) { //if my boxes are empty
     return res.status(400).send('email or passowrd empty <a href="/login"> try again</a>');
   } else {
-    let user = getUserByEmail(req.body.email, users);
+    let user = getUserByEmail(email, users);
     if (user && bcrypt.compareSync(password, users[user].password)) {
       req.session.user_id = users[user].id;
       return res.redirect('/urls');
